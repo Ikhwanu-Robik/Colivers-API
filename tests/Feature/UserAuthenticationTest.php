@@ -30,14 +30,52 @@ class UserAuthenticationTest extends TestCase
     {
         $this->setupDatabase();
         $this->createUser();
-        $otherPhone = '081335356767';
-        
+        $otherPhone = '0813-3535-6767';
+
         $response = $this->postJson('/api/login', [
             'phone' => $otherPhone,
             'password' => $this->user->password
         ]);
 
         $response->assertUnauthorized();
+    }
+
+    public function test_login_require_phone(): void
+    {
+        $this->setupDatabase();
+        $this->createUser();
+
+        $response = $this->postJson('/api/login', [
+            'password' => $this->user->passwordPlain
+        ]);
+
+        $response->assertJsonValidationErrors('phone');
+    }
+    public function test_login_require_valid_format_phone(): void
+    {
+        $this->setupDatabase();
+        $invalidPhone = '0812 2890 0011';
+
+        $response = $this->postJson('/api/login', [
+            'phone' => $invalidPhone,
+            'password' => fake()->password()
+        ]);
+
+        $response->assertJsonValidationErrors([
+            'phone' => 'The phone is not an Indonesian phone number of the required format'
+        ]);
+    }
+
+    public function test_login_require_password(): void
+    {
+        $this->setupDatabase();
+        $this->createUser();
+
+        $response = $this->postJson('/api/login', [
+            'phone' => $this->user->phone
+        ]);
+
+        $response->assertJsonValidationErrorFor('password');
     }
 
     private function setupDatabase()
@@ -47,7 +85,7 @@ class UserAuthenticationTest extends TestCase
 
     private function createUser()
     {
-        $phone = '081265789189';
+        $phone = '0812-6578-9189';
         $password = '12345678';
         $this->user = User::factory()->create(['phone' => $phone, 'password' => $password]);
         $this->user->passwordPlain = $password;
