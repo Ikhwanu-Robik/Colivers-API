@@ -16,7 +16,8 @@ class LoginController extends Controller
         $isLoggedIn = Auth::attempt($credentials);
 
         if ($isLoggedIn) {
-            $token = $this->createUserToken();
+            $user = Auth::user();
+            $token = $this->createUserToken($user);
             return response()->json(['token' => $token]);
         }
 
@@ -34,9 +35,8 @@ class LoginController extends Controller
         return $credentials;
     }
 
-    private function createUserToken()
+    private function createUserToken($user)
     {
-        $user = Auth::user();
         $token = $user->createToken(User::class);
         return $token->plainTextToken;
     }

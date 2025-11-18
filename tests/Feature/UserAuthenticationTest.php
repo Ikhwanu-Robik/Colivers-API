@@ -34,7 +34,7 @@ class UserAuthenticationTest extends TestCase
 
         $response = $this->postJson('/api/login', [
             'phone' => $otherPhone,
-            'password' => $this->user->password
+            'password' => $this->user->passwordPlain
         ]);
 
         $response->assertUnauthorized();
@@ -51,6 +51,7 @@ class UserAuthenticationTest extends TestCase
 
         $response->assertJsonValidationErrors('phone');
     }
+
     public function test_login_require_valid_format_phone(): void
     {
         $this->setupDatabase();
