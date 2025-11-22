@@ -1,19 +1,18 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Auth;
 
 use Tests\TestCase;
-use App\Models\User;
-use Illuminate\Support\Facades\Artisan;
+use Tests\Feature\Auth\Util;
 
-class UserAuthenticationTest extends TestCase
+class LoginTest extends TestCase
 {
     private $user;
 
     public function test_user_can_login_with_correct_credentials(): void
     {
-        $this->setupDatabase();
-        $this->createUser();
+        Util::setupDatabase();
+        $this->user = Util::createUser();
 
         $response = $this->postJson('/api/login', [
             'phone' => $this->user->phone,
@@ -28,8 +27,8 @@ class UserAuthenticationTest extends TestCase
 
     public function test_user_cannot_login_with_incorrect_credentials(): void
     {
-        $this->setupDatabase();
-        $this->createUser();
+        Util::setupDatabase();
+        $this->user = Util::createUser();
         $otherPhone = '0813-3535-6767';
 
         $response = $this->postJson('/api/login', [
@@ -42,8 +41,8 @@ class UserAuthenticationTest extends TestCase
 
     public function test_login_require_phone(): void
     {
-        $this->setupDatabase();
-        $this->createUser();
+        Util::setupDatabase();
+        $this->user = Util::createUser();
 
         $response = $this->postJson('/api/login', [
             'password' => $this->user->passwordPlain
@@ -54,7 +53,7 @@ class UserAuthenticationTest extends TestCase
 
     public function test_login_require_valid_format_phone(): void
     {
-        $this->setupDatabase();
+        Util::setupDatabase();
         $invalidPhone = '0812 2890 0011';
 
         $response = $this->postJson('/api/login', [
@@ -69,52 +68,13 @@ class UserAuthenticationTest extends TestCase
 
     public function test_login_require_password(): void
     {
-        $this->setupDatabase();
-        $this->createUser();
+        Util::setupDatabase();
+        $this->user = Util::createUser();
 
         $response = $this->postJson('/api/login', [
             'phone' => $this->user->phone
         ]);
 
         $response->assertJsonValidationErrorFor('password');
-    }
-
-    public function test_logout_require_active_bearer_token(): void
-    {
-        $this->setupDatabase();
-
-        $response = $this->postJson('/api/logout');
-
-        $response->assertUnauthorized();
-    }
-
-    public function test_user_can_logout(): void
-    {
-        $this->setupDatabase();
-        $this->createUser();
-        $loginResponse = $this->postJson('/api/login', [
-            'phone' => $this->user->phone,
-            'password' => $this->user->passwordPlain
-        ]);
-        $bearerToken = 'Bearer ' . $loginResponse->json('token');
-
-        $logoutResponse = $this->postJson('/api/logout', [], [
-            'Authorization' => $bearerToken
-        ]);
-
-        $logoutResponse->assertOk();
-    }
-
-    private function setupDatabase()
-    {
-        Artisan::call('migrate');
-    }
-
-    private function createUser()
-    {
-        $phone = '0812-6578-9189';
-        $password = '12345678';
-        $this->user = User::factory()->create(['phone' => $phone, 'password' => $password]);
-        $this->user->passwordPlain = $password;
     }
 }
