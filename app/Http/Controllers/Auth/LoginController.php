@@ -2,26 +2,20 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\Auth\LoginRequest;
 
 class LoginController extends Controller
 {
     public function __invoke(LoginRequest $request)
     {
         $credentials = $this->extractCredentials($request);
-        $isLoggedIn = Auth::attempt($credentials);
-
-        if ($isLoggedIn) {
-            $user = Auth::user();
-            $token = $this->createUserToken($user);
-            return response()->json(['token' => $token]);
-        }
-
-        return response()->json(['message' => 'The credentials do not match our record'], 401);
+        $user = $this->attemptLogin($credentials);
+        $token = $this->createUserToken($user);
+        return response()->json(['token' => $token]);
     }
 
     private function extractCredentials(Request $request)
@@ -33,6 +27,16 @@ class LoginController extends Controller
             'password' => $password
         ];
         return $credentials;
+    }
+
+    private function attemptLogin(array $credentials)
+    {
+        $user = User::where('phone', $credentials['phone'])->first();
+
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            abort(401, 'The credentials do not match our record');
+        }
+        return $user;
     }
 
     private function createUserToken($user)

@@ -88,6 +88,23 @@ class UserAuthenticationTest extends TestCase
         $response->assertUnauthorized();
     }
 
+    public function test_user_can_logout(): void
+    {
+        $this->setupDatabase();
+        $this->createUser();
+        $loginResponse = $this->postJson('/api/login', [
+            'phone' => $this->user->phone,
+            'password' => $this->user->passwordPlain
+        ]);
+        $bearerToken = 'Bearer ' . $loginResponse->json('token');
+
+        $logoutResponse = $this->postJson('/api/logout', [], [
+            'Authorization' => $bearerToken
+        ]);
+
+        $logoutResponse->assertOk();
+    }
+
     private function setupDatabase()
     {
         Artisan::call('migrate');
