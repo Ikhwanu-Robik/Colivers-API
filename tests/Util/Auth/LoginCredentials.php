@@ -6,13 +6,14 @@ use App\Models\User;
 
 class LoginCredentials
 {
+    // TODO: consider splitting $credentials into many attributes
     private $credentials;
     private $invalidCredentials;
 
     public function __construct()
     {
         $this->credentials = $this->createCredentials();
-        $this->invalidCredentials = $this->createInvalidCredentials();
+        $this->invalidCredentials = new InvalidLoginCredentials();
     }
 
     private function createCredentials()
@@ -43,15 +44,6 @@ class LoginCredentials
         return $credentials;
     }
 
-    private function createInvalidCredentials()
-    {
-        $invalidCredentials = [
-            'phone' => '+628122908228',
-            'password' => null
-        ];
-        return $invalidCredentials;
-    }
-
     public function exclude($exclusions)
     {
         $filteredCredentials = array_diff_key(
@@ -64,19 +56,10 @@ class LoginCredentials
 
     public function invalidate($keysToInvalidate)
     {
-        $filteredInvalidCredentials = $this->getInvalidCredentialsByKeys($keysToInvalidate);
+        $filteredInvalidCredentials = $this->invalidCredentials->filterByKeys($keysToInvalidate);
         $credentialsWithInvalids = $this->replaceWithInvalid($filteredInvalidCredentials);
 
         return $credentialsWithInvalids;
-    }
-
-    private function getInvalidCredentialsByKeys($keys)
-    {
-        $filtered = [];
-        foreach ($keys as $key) {
-            $filtered[$key] = $this->invalidCredentials[$key];
-        }
-        return $filtered;
     }
 
     private function replaceWithInvalid($invalids)
