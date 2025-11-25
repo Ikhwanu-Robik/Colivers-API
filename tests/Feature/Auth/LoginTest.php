@@ -14,7 +14,7 @@ class LoginTest extends TestCase
     public function test_user_can_login_with_correct_credentials(): void
     {
         Util::setupDatabase();
-        $data = LoginUtil::getLoginData();
+        $data = LoginUtil::getLoginDataWithout([]);
 
         $response = $this->postJson('/api/login', $data);
 

@@ -6,66 +6,93 @@ use App\Models\User;
 
 class LoginUtil
 {
-    private static $invalidLoginData = [
-        'phone' => '+628122908228',
-        'password' => null
-    ];
-
     public static function getLoginDataWithout(array $exclusions)
     {
-        $data = self::getLoginData();
-        return array_diff_key($data, array_flip($exclusions));
+        $loginData = self::getLoginData();
+        return self::excludeFromLoginData($loginData, $exclusions);
     }
 
-    public static function getLoginDataInvalidate(array $invalidKeys)
+    public static function getLoginDataInvalidate(array $keysToInvalidate)
     {
-        $data = self::getLoginData();
-        $invalids = self::getInvalidLoginDataByKeys($invalidKeys);
-        return self::replaceLoginDataWithInvalids($data, $invalids);
+        $loginData = self::getLoginData();
+        $invalidLoginData = self::getInvalidLoginData();
+
+        $filteredInvalidLoginData = self::filterInvalidLoginData(
+           $invalidLoginData,
+           $keysToInvalidate
+        );
+
+        return self::replaceLoginData($loginData, $filteredInvalidLoginData);
     }
 
     public static function getIncorrectLoginData()
     {
-        $data = self::getLoginData();
-        $otherPhone = '0812-2782-8219';
-        $data['phone'] = $otherPhone;
+        $loginData = self::getLoginData();
+        $wrongLoginData = self::setWrongPhoneTo($loginData);
 
-        return $data;
+        return $wrongLoginData;
     }
 
-    public static function getLoginData()
+    private static function setWrongPhoneTo(array $loginData)
+    {
+        $otherPhone = '0812-2782-8219';
+        $loginData['phone'] = $otherPhone;
+
+        return $loginData;
+    }
+
+    private static function getLoginData()
     {
         $user = self::createUser();
-        return [
+        $loginData = [
             'phone' => $user->phone,
             'password' => $user->passwordPlain
         ];
+        return $loginData;
     }
-
+    
     private static function createUser()
     {
-        $phone = '0812-6578-9189';
+        $phone = '0812-6578-9189'; // factory doesn't generate phone with this format
         $password = '12345678';
         $user = User::factory()->create(['phone' => $phone, 'password' => $password]);
         $user->passwordPlain = $password;
         return $user;
     }
 
-    private static function getInvalidLoginDataByKeys(array $invalidKeys)
+    private static function excludeFromLoginData(array $loginData, array $exclusions)
+    {
+        $filteredLoginData = array_diff_key(
+            $loginData,
+            array_flip($exclusions)
+        );
+
+        return $filteredLoginData;
+    }
+
+    private static function getInvalidLoginData()
+    {
+        $invalidLoginData = [
+            'phone' => '+628122908228',
+            'password' => null
+        ];
+        return $invalidLoginData;
+    }
+
+    private static function filterInvalidLoginData(array $invalidLoginData, array $keysToInvalidate)
     {
         $filtered = [];
-        foreach ($invalidKeys as $invalidKey) {
-            $filtered[$invalidKey] = self::$invalidLoginData[$invalidKey];
+        foreach ($keysToInvalidate as $key) {
+            $filtered[$key] = $invalidLoginData[$key];
         }
         return $filtered;
     }
 
-    private static function replaceLoginDataWithInvalids($data, $replacings)
+    private static function replaceLoginData(array $loginData, array $replacings)
     {
         foreach ($replacings as $key => $value) {
-            $data[$key] = $value;
+            $loginData[$key] = $value;
         }
-        return $data;
+        return $loginData;
     }
-
 }
