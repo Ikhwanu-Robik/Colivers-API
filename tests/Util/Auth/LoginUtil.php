@@ -2,8 +2,6 @@
 
 namespace Tests\Util\Auth;
 
-use App\Models\User;
-
 class LoginUtil
 {
     public static function getLoginCredentialsWithout(array $exclusions)

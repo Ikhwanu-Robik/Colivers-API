@@ -6,16 +6,20 @@ use App\Models\User;
 
 class LoginCredentials
 {
-    private $user;
     private $credentials;
     private $invalidCredentials;
 
     public function __construct()
     {
-        $user = $this->createUser();
-        $this->user = $user;
-        $this->credentials = $this->extractCredentialsFromUser($user);
+        $this->credentials = $this->createCredentials();
         $this->invalidCredentials = $this->createInvalidCredentials();
+    }
+
+    private function createCredentials()
+    {
+        $user = $this->createUser();
+        $credentials = $this->extractCredentialsFromUser($user);
+        return $credentials;
     }
 
     private function createUser()
@@ -41,11 +45,11 @@ class LoginCredentials
 
     private function createInvalidCredentials()
     {
-        $invalidLoginCredentials = [
+        $invalidCredentials = [
             'phone' => '+628122908228',
             'password' => null
         ];
-        return $invalidLoginCredentials;
+        return $invalidCredentials;
     }
 
     public function exclude($exclusions)
@@ -60,24 +64,24 @@ class LoginCredentials
 
     public function invalidate($keysToInvalidate)
     {
-        $filteredInvalidCredentials = $this->filterInvalidCredentials($keysToInvalidate);
-        $loginCredentialsWithInvalid = $this->replaceWithInvalid($filteredInvalidCredentials);
+        $filteredInvalidCredentials = $this->getInvalidCredentialsByKeys($keysToInvalidate);
+        $credentialsWithInvalids = $this->replaceWithInvalid($filteredInvalidCredentials);
 
-        return $loginCredentialsWithInvalid;
+        return $credentialsWithInvalids;
     }
 
-    private function filterInvalidCredentials($keysToInvalidate)
+    private function getInvalidCredentialsByKeys($keys)
     {
         $filtered = [];
-        foreach ($keysToInvalidate as $key) {
+        foreach ($keys as $key) {
             $filtered[$key] = $this->invalidCredentials[$key];
         }
         return $filtered;
     }
 
-    private function replaceWithInvalid($invalidCredentials)
+    private function replaceWithInvalid($invalids)
     {
-        foreach ($invalidCredentials as $key => $value) {
+        foreach ($invalids as $key => $value) {
             $this->credentials[$key] = $value;
         }
         return $this->credentials;

@@ -4,16 +4,16 @@ namespace Tests\Util\Auth;
 
 class SignupAttributes
 {
-    private $signupAttributes;
-    private $invalidSignupAttributes;
+    private $attributes;
+    private $invalidAttributes;
 
     public function __construct()
     {
-        $this->signupAttributes = $this->createSignupAttributes();
-        $this->invalidSignupAttributes = $this->createInvalidAttributes();
+        $this->attributes = $this->createAttributes();
+        $this->invalidAttributes = $this->createInvalidAttributes();
     }
 
-    private function createSignupAttributes()
+    private function createAttributes()
     {
         return [
             'name' => fake()->name(),
@@ -39,36 +39,36 @@ class SignupAttributes
 
     public function exclude($exclusions)
     {
-        $filteredSignupAttributes = array_diff_key(
-            $this->signupAttributes,
+        $filteredAttributes = array_diff_key(
+            $this->attributes,
             array_flip($exclusions)
         );
 
-        return $filteredSignupAttributes;
+        return $filteredAttributes;
     }
 
     public function invalidate($keysToInvalidate)
     {
-        $filteredInvalidAttributes = $this->filterInvalidAttributes($keysToInvalidate);
+        $filteredInvalidAttributes = $this->getInvalidAttributesByKeys($keysToInvalidate);
         $attributesWithInvalids = $this->replaceWithInvalid($filteredInvalidAttributes);
 
         return $attributesWithInvalids;
     }
 
-    private function filterInvalidAttributes($keysToInvalidate)
+    private function getInvalidAttributesByKeys($keys)
     {
-        $filteredInvalidSignupAttributes = [];
-        foreach ($keysToInvalidate as $key) {
-            $filteredInvalidSignupAttributes[$key] = $this->invalidSignupAttributes[$key];
+        $filtered = [];
+        foreach ($keys as $key) {
+            $filtered[$key] = $this->invalidAttributes[$key];
         }
-        return $filteredInvalidSignupAttributes;
+        return $filtered;
     }
 
     private function replaceWithInvalid($invalids)
     {
         foreach ($invalids as $key => $value) {
-            $this->signupAttributes[$key] = $value;
+            $this->attributes[$key] = $value;
         }
-        return $this->signupAttributes;
+        return $this->attributes;
     }
 }
