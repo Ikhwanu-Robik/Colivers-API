@@ -2,15 +2,16 @@
 
 namespace Tests\Feature\Auth;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use Tests\Util\Util;
 use Tests\Util\Auth\SignupUtil;
 
 class SignupTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_user_can_signup(): void
     {
-        Util::setupDatabase();
         $data = SignupUtil::getSignupAttributesWithout([]);
 
         $response = $this->postJson('/api/signup', $data);
