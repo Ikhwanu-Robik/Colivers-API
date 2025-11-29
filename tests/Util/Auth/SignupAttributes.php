@@ -2,6 +2,8 @@
 
 namespace Tests\Util\Auth;
 
+use Illuminate\Http\UploadedFile;
+
 class SignupAttributes
 {
     private $attributes;
@@ -23,6 +25,7 @@ class SignupAttributes
             'gender' => fake()->randomElement(['male', 'female']),
             'address' => fake()->address(),
             'bio' => fake()->realText(),
+            'profile_photo' => UploadedFile::fake()->image('profile_photo.jpg'),
         ];
     }
 

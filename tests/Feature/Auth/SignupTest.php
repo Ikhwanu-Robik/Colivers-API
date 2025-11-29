@@ -2,13 +2,21 @@
 
 namespace Tests\Feature\Auth;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Tests\Util\Auth\SignupUtil;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SignupTest extends TestCase
 {
     use RefreshDatabase;
+    
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        Storage::fake('public');
+    }
 
     public function test_user_can_signup(): void
     {
@@ -25,7 +33,8 @@ class SignupTest extends TestCase
                 'gender',
                 'birthdate',
                 'address',
-                'bio'
+                'bio',
+                'profile_photo',
             ]
         ]);
     }
@@ -137,5 +146,38 @@ class SignupTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertOnlyJsonValidationErrors('bio');
+    }
+
+    public function test_signup_require_profile_photo(): void
+    {
+        $data = SignupUtil::getSignupAttributesWithout(['profile_photo']);
+
+        $response = $this->postJson('/api/signup', $data);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors('profile_photo');
+    }
+
+    public function test_signup_require_profile_photo_to_be_image(): void
+    {
+        $data = SignupUtil::getSignupAttributesInvalidate(['profile_photo']);
+
+        $response = $this->postJson('/api/signup', $data);
+
+        $response->assertStatus(422);
+        $response->assertOnlyJsonValidationErrors('profile_photo');
+        $response->assertJsonValidationErrors([
+            'profile_photo' => 'The profile photo field must be an image.'
+        ]);
+    }
+
+    public function test_signup_uploaded_image_exists_in_storage(): void
+    {
+        $data = SignupUtil::getSignupAttributesWithout([]);
+
+        $response = $this->postJson('/api/signup', $data);
+
+        $savedFilePath = $response->json('user.profile_photo');
+        Storage::disk('public')->assertExists($savedFilePath);
     }
 }

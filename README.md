@@ -60,6 +60,12 @@ Then generate the application key:
 php artisan key:generate
 ```
 
+Lastly, link the storage/app folder:
+
+```bash
+php artisan storage:link
+```
+
 ---
 
 ### 4. Database Setup

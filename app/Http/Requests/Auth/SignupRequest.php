@@ -24,6 +24,7 @@ class SignupRequest extends FormRequest
             'gender' => ['required', new BinaryGender],
             'address' => 'required',
             'bio' => 'required',
+            'profile_photo' => ['required', 'image']
         ];
     }
 }

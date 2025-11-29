@@ -2,6 +2,8 @@
 
 namespace Tests\Util\Auth;
 
+use Illuminate\Http\UploadedFile;
+
 class InvalidSignupAttributes
 {
     private $invalidAttributes;
@@ -18,7 +20,8 @@ class InvalidSignupAttributes
             'phone' => '+628122908228',
             'password' => null,
             'birthdate' => now()->toDateString(),
-            'gender' => 'transgender'
+            'gender' => 'transgender',
+            'profile_photo' => UploadedFile::fake()->create('not-image.json', 20, 'application/json'),
         ];
     }
 
